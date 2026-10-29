@@ -1,0 +1,50 @@
+@page "/items/{Id}"
+@inject IEquipmentService Items
+@inject IBookingService Bookings
+@inject UserState User
+
+<a href="/items">← Back to Items</a>
+
+@if (!loaded)
+{
+    <p>Loading...</p>
+}
+else if (item is null)
+{
+    <p class="error">Sorry, no item found with ID "@Id". Please go back and pick an item from the list.</p>
+}
+else
+{
+    <h2>@item.Name <span class="badge @item.Status">@item.Status</span></h2>
+    <p><b>Category:</b> @item.Category</p>
+    <p><b>Owner:</b> @item.Owner?.Name</p>
+    <p><b>Location:</b> @item.Location</p>
+    <p><b>Description:</b> @item.Description</p>
+    <p><b>Borrowing conditions:</b> @(item.Conditions ?? "None")</p>
+
+    <BookingForm Item="item" OnSubmit="Submit" />
+    @if (msg is not null)
+    {
+        <p class="@(success ? "ok" : "error")">@msg</p>
+    }
+}
+
+@code {
+    [Parameter] public string Id { get; set; } = "";
+    EquipmentItem? item;
+    bool loaded, success;
+    string? msg;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        item = int.TryParse(Id, out var id) ? await Items.GetByIdAsync(id) : null;  // bad id like "abc" -> null
+        loaded = true;
+    }
+
+    async Task Submit(BookingRequestModel m)
+    {
+        var err = await Bookings.RequestAsync(item!.Id, User.MemberId, m);
+        success = err is null;
+        msg = err ?? "Request submitted! Track it in My Bookings.";
+    }
+}

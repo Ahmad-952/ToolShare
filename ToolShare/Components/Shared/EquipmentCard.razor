@@ -1,0 +1,21 @@
+<div class="card">
+    @if (!string.IsNullOrEmpty(Item.ImageUrl))
+    {
+        <img src="@Item.ImageUrl" alt="@Item.Name" />
+    }
+    else
+    {
+        <div style="height:140px;background:#eee;text-align:center;line-height:140px">No image</div>
+    }
+    <h4>@Item.Name</h4>
+    <div>@Item.Category</div>
+    <div>📍 @Item.Location</div>
+    <span class="badge @Item.Status">@Item.Status</span>
+    <br /><br />
+    <button class="btn" @onclick="() => OnView.InvokeAsync(Item.Id)">View Details</button>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public EquipmentItem Item { get; set; } = default!;  // data comes in
+    [Parameter] public EventCallback<int> OnView { get; set; }                       // tells parent which item was clicked
+}

@@ -1,0 +1,17 @@
+<h4>Request to Borrow</h4>
+<EditForm Model="model" OnValidSubmit="Send">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <p>Start Date<br /><InputDate @bind-Value="model.StartDate" /></p>
+    <p>End Date<br /><InputDate @bind-Value="model.EndDate" /></p>
+    <p>Message to owner (optional)<br /><InputTextArea @bind-Value="model.Message" /></p>
+    <button class="btn" disabled="@(!Item.IsAvailable)">Submit Request</button>
+</EditForm>
+
+@code {
+    [Parameter, EditorRequired] public EquipmentItem Item { get; set; } = default!;
+    [Parameter] public EventCallback<BookingRequestModel> OnSubmit { get; set; }
+    BookingRequestModel model = new();
+
+    Task Send() => OnSubmit.InvokeAsync(model);   // OnValidSubmit only fires if validation passed
+}

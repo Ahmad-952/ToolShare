@@ -1,0 +1,43 @@
+@page "/mybookings"
+@inject IBookingService Bookings
+@inject UserState User
+
+<h2>My Bookings</h2>
+@if (msg is not null) { <p class="ok">@msg</p> }
+
+@if (list is null) { <p>Loading...</p> }
+else if (list.Count == 0) { <p>No bookings yet.</p> }
+else
+{
+    <table>
+        <tr><th>Item</th><th>Dates</th><th>Status</th><th>Action</th></tr>
+        @foreach (var b in list)
+        {
+            <tr>
+                <td>@b.Item?.Name</td>
+                <td>@b.StartDate.ToString("dd-MM-yyyy") to @b.EndDate.ToString("dd-MM-yyyy")</td>
+                <td><span class="badge @b.Status">@b.Status</span></td>
+                <td>
+                    @if (b.Status is BookingStatus.Pending or BookingStatus.Approved)
+                    {
+                        <button class="btn danger" @onclick="() => Cancel(b.Id)">Cancel</button>
+                    }
+                </td>
+            </tr>
+        }
+    </table>
+}
+
+@code {
+    List<Booking>? list;
+    string? msg;
+
+    protected override async Task OnInitializedAsync() => await Load();
+    async Task Load() => list = await Bookings.GetByBorrowerAsync(User.MemberId);
+
+    async Task Cancel(int id)
+    {
+        msg = await Bookings.CancelAsync(id) ?? "Booking cancelled.";
+        await Load();
+    }
+}

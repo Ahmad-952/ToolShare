@@ -1,0 +1,54 @@
+## Build output
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+## Visual Studio / Rider / VS Code
+.vs/
+.vscode/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.userprefs
+*.DotSettings.user
+
+## Test / coverage
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+*.coverage
+*.coveragexml
+
+## Local database files (LocalDB / SQLite / mdf)
+*.mdf
+*.ldf
+*.ndf
+*.db
+*.db-shm
+*.db-wal
+App_Data/
+
+## NuGet
+*.nupkg
+*.snupkg
+packages/
+*.nuget.props
+*.nuget.targets
+
+## OS junk
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store
+
+## Secrets / local overrides
+appsettings.Development.local.json
+*.secrets.json
+.env
+
+## Publish output
+publish/
+*.pubxml.user

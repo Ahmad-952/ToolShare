@@ -1,0 +1,102 @@
+@page "/myitems"
+@inject IEquipmentService Items
+@inject IBookingService Bookings
+@inject UserState User
+
+<h2>My Listed Items</h2>
+<button class="btn" @onclick="AddNew">+ Add New Item</button>
+@if (msg is not null) { <p class="ok">@msg</p> }
+
+@if (editing is not null)
+{
+    <EditForm Model="editing" OnValidSubmit="Save">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <p>Name<br /><InputText @bind-Value="editing.Name" /></p>
+        <p>Category<br />
+            <InputSelect @bind-Value="editing.Category">
+                @foreach (var c in Categories.All) { <option value="@c">@c</option> }
+            </InputSelect>
+        </p>
+        <p>Location<br /><InputText @bind-Value="editing.Location" /></p>
+        <p>Description<br /><InputTextArea @bind-Value="editing.Description" /></p>
+        <p>Borrowing conditions<br /><InputText @bind-Value="editing.Conditions" /></p>
+        <p>Image URL<br /><InputText @bind-Value="editing.ImageUrl" /></p>
+        <button class="btn">Save</button>
+        <button type="button" class="btn danger" @onclick="CancelEdit">Cancel</button>
+    </EditForm>
+}
+
+<table>
+    <tr><th>Item</th><th>Category</th><th>Status</th><th>Actions</th></tr>
+    @foreach (var i in myItems)
+    {
+        <tr>
+            <td>@i.Name</td>
+            <td>@i.Category</td>
+            <td><span class="badge @i.Status">@i.Status</span></td>
+            <td>
+                <button class="btn" @onclick="() => Edit(i)">Edit</button>
+                <button class="btn danger" @onclick="() => Delete(i.Id)">Delete</button>
+            </td>
+        </tr>
+    }
+</table>
+
+<h2>Incoming Requests</h2>
+<table>
+    <tr><th>Item</th><th>Borrower</th><th>Dates</th><th>Status</th><th>Actions</th></tr>
+    @foreach (var b in incoming)
+    {
+        <tr>
+            <td>@b.Item?.Name</td>
+            <td>@b.Borrower?.Name</td>
+            <td>@b.StartDate.ToString("dd-MM-yyyy") to @b.EndDate.ToString("dd-MM-yyyy")</td>
+            <td><span class="badge @b.Status">@b.Status</span></td>
+            <td>
+                @if (b.Status == BookingStatus.Pending)
+                {
+                    <button class="btn" @onclick="() => Approve(b.Id)">Approve</button>
+                    <button class="btn danger" @onclick="() => Reject(b.Id)">Reject</button>
+                }
+                @if (b.Status == BookingStatus.Approved)
+                {
+                    <button class="btn" @onclick="() => Return(b.Id)">Mark Returned</button>
+                }
+            </td>
+        </tr>
+    }
+</table>
+
+@code {
+    List<EquipmentItem> myItems = new();
+    List<Booking> incoming = new();
+    EquipmentItem? editing;
+    string? msg;
+
+    protected override async Task OnInitializedAsync() => await Load();
+
+    async Task Load()
+    {
+        myItems = await Items.GetByOwnerAsync(User.MemberId);
+        incoming = await Bookings.GetIncomingAsync(User.MemberId);
+    }
+
+    void AddNew() => editing = new EquipmentItem { OwnerId = User.MemberId };
+    void Edit(EquipmentItem i) => editing = i;
+    async Task CancelEdit() { editing = null; await Load(); }
+
+    async Task Save()
+    {
+        if (editing!.Id == 0) await Items.AddAsync(editing);   // Create
+        else await Items.UpdateAsync(editing);                  // Update
+        editing = null;
+        msg = "Item saved.";
+        await Load();
+    }
+
+    async Task Delete(int id) { await Items.DeleteAsync(id); msg = "Item deleted."; await Load(); }
+    async Task Approve(int id) { msg = await Bookings.ApproveAsync(id) ?? "Request approved."; await Load(); }
+    async Task Reject(int id) { msg = await Bookings.RejectAsync(id) ?? "Request rejected."; await Load(); }
+    async Task Return(int id) { msg = await Bookings.MarkReturnedAsync(id) ?? "Marked as returned. Item is available again."; await Load(); }
+}

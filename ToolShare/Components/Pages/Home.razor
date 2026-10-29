@@ -1,0 +1,23 @@
+@page "/"
+@inject IEquipmentService Items
+@inject NavigationManager Nav
+
+<div class="hero">
+    <h1>Share Tools. Build a Stronger Community.</h1>
+    <p>Borrow what you need. Lend what you can.</p>
+    <button class="btn" @onclick='() => Nav.NavigateTo("/items")'>Browse Items</button>
+</div>
+
+<h3>Featured Items</h3>
+<div class="grid">
+    @foreach (var i in featured)
+    {
+        <EquipmentCard Item="i" OnView="Open" />
+    }
+</div>
+
+@code {
+    List<EquipmentItem> featured = new();
+    protected override async Task OnInitializedAsync() => featured = (await Items.GetAllAsync()).Take(4).ToList();
+    void Open(int id) => Nav.NavigateTo($"/items/{id}");
+}

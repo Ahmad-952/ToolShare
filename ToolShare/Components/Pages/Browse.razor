@@ -1,0 +1,35 @@
+@page "/items"
+@inject IEquipmentService Items
+@inject NavigationManager Nav
+
+<h2>Browse Items</h2>
+<input placeholder="Search tools, cameras..." @bind="search" @bind:event="oninput" />
+<select @bind="category">
+    <option value="">All categories</option>
+    @foreach (var c in Categories.All)
+    {
+        <option value="@c">@c</option>
+    }
+</select>
+
+<div class="grid">
+    @foreach (var i in Filtered)
+    {
+        <EquipmentCard Item="i" OnView="View" />
+    }
+</div>
+@if (!Filtered.Any()) { <p>No items found.</p> }
+
+@code {
+    List<EquipmentItem> all = new();
+    string search = "";
+    string category = "";
+
+    IEnumerable<EquipmentItem> Filtered => all.Where(i =>
+        (category == "" || i.Category == category) &&
+        (i.Name.Contains(search ?? "", StringComparison.OrdinalIgnoreCase) ||
+         i.Description.Contains(search ?? "", StringComparison.OrdinalIgnoreCase)));
+
+    protected override async Task OnInitializedAsync() => all = await Items.GetAllAsync();
+    void View(int id) => Nav.NavigateTo($"/items/{id}");   // handles the card's EventCallback
+}

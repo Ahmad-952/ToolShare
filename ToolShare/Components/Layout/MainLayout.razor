@@ -1,0 +1,28 @@
+@inherits LayoutComponentBase
+@inject UserState User
+@inject NavigationManager Nav
+
+<div class="top">
+    <b>🛠 ToolShare</b>
+    <NavLink href="" Match="NavLinkMatch.All">Home</NavLink>
+    <NavLink href="items">Browse Items</NavLink>
+    <NavLink href="mybookings">My Bookings</NavLink>
+    <NavLink href="myitems">My Items</NavLink>
+    <span style="margin-left:auto">
+        Acting as: @User.Name
+        <button class="btn" @onclick="() => Switch(1)">Ali (owner)</button>
+        <button class="btn" @onclick="() => Switch(2)">Sara (borrower)</button>
+    </span>
+</div>
+
+<main>@Body</main>
+
+<div id="blazor-error-ui">An error occurred. <a href="" class="reload">Reload</a></div>
+
+@code {
+    void Switch(int id)
+    {
+        User.MemberId = id;
+        Nav.NavigateTo("/");
+    }
+}
